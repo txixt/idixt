@@ -10,14 +10,14 @@ import SwiftData
 
 @Model final class UserContext {
     var id: String
-    var username: String
-    var userContext: String
-    var faceidLock: Bool 
+    var name: String
+    var content: String
+    var faceidLock: Bool
     
-    init(username: String = "unknown", userContext: String = "" ) {
+    init(name: String = "unknown", content: String = "" ) {
         self.id = UUID().uuidString
-        self.username = username
-        self.userContext = userContext
+        self.name = name
+        self.content = content
         self.faceidLock = false
     }
 }

@@ -12,7 +12,9 @@ import SwiftData
 struct idixtApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Thread.self,
+            UserContext.self,
+            IdixtContext.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

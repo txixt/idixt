@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AskButtonView: View {
     @Binding var gov: Governor
-    @Binding var idiot: IdixtModel
+    @Binding var idiot: IdixtModel?
     
     var body: some View {
         Button(action: {
@@ -26,7 +26,11 @@ struct AskButtonView: View {
     
     private func toggleRecording() async {}
     
-    private func makeTheAsk() async {}
+    private func makeTheAsk() async {
+        guard let idiot else { return }
+        do { try await idiot.generateReply(prompt: gov.input, gov: gov) }
+        catch { gov.alertReport = .modelGenerationFail; gov.alertText = "model could not generate reply: \(error)" }
+    }
 }
 
 #Preview {

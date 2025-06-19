@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TextEntryView: View {
     @Binding var gov: Governor
-    @Binding var idiot: IdixtModel
+    @Binding var idiot: IdixtModel?
     @FocusState private var isFocused: Bool
     
     var body: some View {
@@ -26,6 +26,7 @@ struct TextEntryView: View {
                 }
                 .onSubmit {
                     Task {
+                        guard let idiot else { return }
                         await gov.makeAsk(idiot: idiot)
                     }
                 }
@@ -36,3 +37,4 @@ struct TextEntryView: View {
 #Preview {
     TextEntryView(gov: .constant(Governor()), idiot: .constant(IdixtModel()))
 }
+

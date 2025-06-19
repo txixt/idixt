@@ -10,10 +10,14 @@ import SwiftData
 
 @Model final class IdixtContext {
     var id: String
+    var name: String
     var content: String
     
-    init() {
+    init(name: String = "idixt", content: String = "") {
         id = UUID().uuidString
-        content = "Be curious. If you are not sure of your awnsers, ask the user to look it up on Wikipedia App, calculator, or a another trusted source that is relevant to the topic. Reason through your answer logically in the COT. Then find the most fun metaphor to explain to the user in the Reply."
+        self.name = name
+        self.content = content
     }
 }
+
+//"Reason through your answer logically in the COT. Then find the most fun metaphor to explain to the user in the Reply."

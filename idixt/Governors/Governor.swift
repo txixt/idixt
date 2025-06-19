@@ -8,11 +8,11 @@
 import Foundation
 
 @Observable final class Governor {
-    var input: String = "" /*{ willSet { if !input.isEmpty { genState = .hasText; print("genState: \(genState)") } } }*/
+    var input: String = ""
     var activeReply: String = ""
     var thread: Thread = Thread()
     var userContext: UserContext? = nil
-    var modelContext: ModelContext? = nil
+    var idixtContext: IdixtContext? = nil
     
     enum GenerationState { case idle, isRecording, isTyping, hasText, isGenerating }
     var genState: GenerationState = .idle
@@ -31,11 +31,9 @@ import Foundation
             thread.exchange.append(input)
             let prompt = input
             input = ""
-            activeReply = try await idiot.generateReply(prompt: prompt)
+            activeReply = try await idiot.generateReply(prompt: prompt, gov: self)
             thread.exchange.append(activeReply)
             if thread.exchange.count == 2 { await makeTitle(idiot: idiot) }
-//
-            
             activeReply = ""
             genState = .idle
         } catch {
@@ -47,7 +45,7 @@ import Foundation
     
     private func makeTitle(idiot: IdixtModel) async {
         do {
-            thread.title = try await idiot.generateReply(prompt: "generate a two or three word summary for the current thread that started with the prompt: \(input)")
+            thread.title = try await idiot.generateReply(prompt: "generate a two or three word summary for the current thread that started with the prompt: \(input)", gov: self)
         } catch {
             thread.title = "thread for" + Date.now.description
         }

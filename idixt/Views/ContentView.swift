@@ -9,8 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var dataContext
+    @Query private var threads: [Thread]
+    @Query private var userContext: [UserContext]
+    @Query private var idixtContext: [IdixtContext]
     @State var gov: Governor = Governor()
-    @State var idiot: IdixtModel = IdixtModel()
+    @State var idiot: IdixtModel?
     
     var body: some View {
         NavigationStack {
@@ -42,6 +46,22 @@ struct ContentView: View {
                     AlertView(gov: $gov)
                 }
                 
+            }
+            .task { loadModels() }
+        }
+    }
+    
+    private func loadModels() {
+        Task {
+            if !userContext.isEmpty { gov.userContext = userContext.first }
+            if !idixtContext.isEmpty { gov.idixtContext = idixtContext.first }
+            let context = ContextCreator().create(user: gov.userContext, idixt: gov.idixtContext)
+            idiot = IdixtModel(context: context)
+            if threads.isEmpty {
+                do {
+                    try await IdixtManager.introduce(idiot: idiot, gov: gov)
+                }
+                dataContext.insert(gov.thread)
             }
         }
     }
