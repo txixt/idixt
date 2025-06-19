@@ -15,10 +15,10 @@ import SwiftUI
     init() { startAnimation() }
     
     private func startAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             DispatchQueue.main.async {
-                withAnimation(.easeInOut(duration: 0.5)) {
+                withAnimation(.easeInOut(duration: 1.0)) {
                     for i in 0...1 {
                         let randomChange = Float.random(in: -0.1...0.1)
                         let newValue = self.cursorSpring[i] + randomChange
