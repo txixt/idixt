@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable final class Governor {
-    var input: String = ""
+    var input: String = "" /*{ willSet { if !input.isEmpty { genState = .hasText; print("genState: \(genState)") } } }*/
     var activeReply: String = ""
     var thread: Thread = Thread()
     var userContext: UserContext? = nil

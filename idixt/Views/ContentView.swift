@@ -19,33 +19,30 @@ struct ContentView: View {
                 Color.gray.opacity(0.2).ignoresSafeArea()
                 
                 VStack {
-                    VStack {
-                        ThreadView(gov: $gov).ignoresSafeArea()
-                    }
-                    .toolbar {
-                        ToolbarItem(placement: .title) { TitleView(gov: $gov).glassEffect() }
-                        ToolbarItem(placement: .bottomBar) { MenuButtonView(gov: $gov) }
-                        ToolbarSpacer()
-                        ToolbarItem(placement: .bottomBar) { TextEntryView(gov: $gov, idiot: $idiot) }
-                        ToolbarSpacer()
-                        ToolbarItem(placement: .bottomBar) { AskButtonView(gov: $gov, idiot: $idiot) }
-                    }
+                    ThreadView(gov: $gov).ignoresSafeArea()
+                }
+                .toolbar {
+                    ToolbarItem(placement: .title) { TitleView(gov: $gov).glassEffect() }
+                    ToolbarItem(placement: .bottomBar) { MenuButtonView(gov: $gov) }
+                    ToolbarSpacer()
+                    ToolbarItem(placement: .bottomBar) { TextEntryView(gov: $gov, idiot: $idiot) }
+                    ToolbarSpacer()
+                    ToolbarItem(placement: .bottomBar) { AskButtonView(gov: $gov, idiot: $idiot) }
                 }
                 .monospaced()
+                .sheet(item: $gov.mode) { mode in
+                      switch mode {
+                      case .archiveSheet: ArchiveView(gov: $gov)
+                      case .settingsSheet: SettingsView(gov: $gov)
+                      case .aboutSheet: AboutView(gov: $gov)
+                      }
+                  }
                 
                 if gov.alertReport != nil {
                     AlertView(gov: $gov)
                 }
                 
             }
-            .sheet(item: $gov.mode) { mode in
-                  switch mode {
-                  case .archiveSheet: ArchiveView(gov: $gov)
-                  case .settingsSheet: SettingsView(gov: $gov)
-                  case .aboutSheet: AboutView(gov: $gov)
-                  }
-              }
-            
         }
     }
 }

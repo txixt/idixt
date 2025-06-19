@@ -14,7 +14,7 @@ import SwiftData
     var exchange: [String]
     var localContext: String
     
-    init(title: String = "thread for" + Date.now.description, exchange: [String] = []) {
+    init(title: String = "New Thread", exchange: [String] = []) {
         self.id = UUID().uuidString
         self.title = title
         self.exchange = exchange

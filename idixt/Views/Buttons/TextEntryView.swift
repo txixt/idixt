@@ -17,7 +17,7 @@ struct TextEntryView: View {
             TextField("hmm?", text: $gov.input)
                 .padding(5)
                 .focused($isFocused)
-                .onChange(of: isFocused) { _, focused in
+                .onChange(of: isFocused) { focused, _ in
                     if focused {
                         gov.genState = .isTyping
                     } else {

@@ -12,7 +12,7 @@ struct ThreadView: View {
     
     var body: some View {
         ScrollView {
-            VStack {
+            LazyVStack {
                 
                 ForEach(Array(gov.thread.exchange.enumerated()), id: \.0) { index, item in
                     if index % 2 == 0 {

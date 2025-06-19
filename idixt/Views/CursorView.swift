@@ -12,7 +12,6 @@ struct CursorView: View {
     @State var curse: Curse = Curse()
     
     var body: some View {
-        
         ZStack {
             MeshGradient(
                 width: 3,
