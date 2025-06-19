@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CursorView: View {
+    @Binding var gov: Governor
     @State var curse: Curse = Curse()
     
     var body: some View {
@@ -23,11 +24,11 @@ struct CursorView: View {
                 ],
                 colors: [
                     .clear, .clear, .clear,
-                    .clear, .cursorSeven, .clear,
+                    .clear, .curseBottom, .clear,
                     .clear, .clear, .clear
                 ]
             )
-            .frame(width: 30, height: 40)
+            .frame(width: 80, height: 100)
             
             MeshGradient(
                 width: 3,
@@ -39,71 +40,25 @@ struct CursorView: View {
                 ],
                 colors: [
                     .clear, .clear, .clear,
-                    .clear, .cursorSix, .clear,
+                    .clear, .curseTop, .clear,
                     .clear, .clear, .clear
                 ]
             )
-            .frame(width: 50, height: 60)
+            .frame(width: 50, height: 70)
             
-            
-            if #available(iOS 26.0, *) {
-                
-                Text("▮.▮")
-                    .padding(3)
-                    .glassEffect(in: .rect(cornerRadius: 3))
-                    .foregroundColor(curse.cursorBlink ? .black : .clear)
-                
-            } else {
-                
-                ZStack {
-                    MeshGradient(
-                        width: 4,
-                        height: 4,
-                        points: [
-                            [0.0, 0.0], [0.05, 0.0], [0.95, 0.0], [1.0, 0.0],
-                            [0.0, 0.05], [0.05, 0.05], [0.95, 0.05], [1.0, 0.05],
-                            [0.0, 0.95], [0.05, 0.95], [0.95, 0.95], [1.0, 0.95],
-                            [0.0, 1.0], [0.05, 1.0], [0.95, 1.0], [1.0, 1.0]
-                        ],
-                        colors: [
-                            .cursorOne, .cursorOne, .cursorOne, .cursorOne,
-                            .cursorOne, .cursorFive, .cursorFive, .cursorOne,
-                            .cursorOne, .cursorFive, .cursorFive, .cursorOne,
-                            .cursorOne, .cursorOne, .cursorOne, .cursorOne
-                        ]
-                    )
-                    .frame(width: 11, height: 22)
-                    .cornerRadius(1)
-                    
-                    MeshGradient(
-                        width: 4,
-                        height: 5,
-                        points: [
-                            [0.0, 0.0], [0.1, 0.0], [0.9, 0.0], [1.0, 0.0],
-                            [0.0, 0.1], [0.1, 0.1], [0.9, 0.1], [1.0, 0.1],
-                            [0.0, 0.15], [0.1, 0.35], [0.9, 0.15], [1.0, 0.15],
-                            [0.0, 0.7], [0.1, 0.7], [0.9, 0.5], [1.0, 0.7],
-                            [0.0, 1.0], [0.1, 1.0], [0.9, 1.0], [1.0, 1.0]
-                        ],
-                        colors: [
-                            .clear, .clear, .clear, .clear,
-                            .clear, .cursorTwo, .cursorTwo, .clear,
-                            .clear, .cursorThree, .cursorThree, .clear,
-                            .clear, .cursorThree, .cursorThree, .clear,
-                            .clear, .clear, .clear, .clear
-                        ]
-                    )
-                    .frame(width: 11, height: 22)
-                    .cornerRadius(1)
-                }
-                .opacity(curse.cursorBlink ? 0.0 : 1.0)
+            Text("▮.▮")
+                .bold()
+                .monospaced(false)
+                .padding(.vertical, 10)
+                .glassEffect(.regular.tint(.clear), in: .rect(cornerRadius: 3))
+                .foregroundColor(curse.cursorBlink ? .black : .clear)
+                .rotationEffect(gov.genState == .isGenerating ? .degrees(11) : .degrees(0))
 
-            }
         }
         .offset(x: -19.5, y: -19)
     }
 }
 
 #Preview {
-    CursorView()
+    CursorView(gov: .constant(Governor()))
 }
