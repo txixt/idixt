@@ -11,10 +11,11 @@ import FoundationModels
 @Observable
 @MainActor
 final class IdixtModel {
-    private let session: LanguageModelSession?
-    var cot: String? = nil
+    var session: LanguageModelSession?
+    var idixtReply: IdixtReply?.PartiallyGenerated?
+    var introduction: Introduction?.PartiallyGenerated?
+    var introspection: IdixtIntrospection?.PartiallyGenerated?
     var reply: String? = nil
-    var sysString: String? = nil
     
     init(context: String? = nil) {
         let defaultContext = "Be curious because discovering reality creates meaning. Be nice because it makes reality better. If you are not sure of your awnsers, ask the user to look it up on Wikipedia App, calculator, or a another trusted source that is relevant to the topic."
@@ -22,50 +23,86 @@ final class IdixtModel {
         session = LanguageModelSession { contextString }
     }
     
-    func generateReply(prompt: String, gov: Governor) async throws -> String {
-        guard let session else { print("NO SESSION! at generateReply"); return "error creating session" }
+    func generateReply(prompt: String, gov: Governor) async throws {
+        guard let session else {
+            gov.alertReport = .modelGenerationFail
+            gov.alertText = "It looks like you don't have AI enabled on your phone. Please adjust your settings to proceed."
+            return
+        }
         do {
-            let iReply = try await session.respond(generating: IdixtReply.self) { "Reply to the following: \(prompt)" }
-            cot = iReply.content.cot
-            reply = iReply.content.reply
-            if iReply.content.localContext != nil { gov.thread.localContext = iReply.content.localContext! }
+            let stream = session.streamResponse(to: prompt, generating: IdixtReply.self, options: GenerationOptions(temperature: Double(gov.idixtContext?.temp ?? 1.1)))
+            for try await thread in stream {
+                idixtReply = thread
+                gov.activeReply = thread.reply
+            }
+            let structure = try await stream.collect()
+            gov.thread.localContext.append(structure.content.localContext)
+            gov.thread.title = structure.content.title
             introspect(
-                username: iReply.content.username,
-                userinfo: iReply.content.userinfo,
-                idixtname: iReply.content.idixtname,
-                idixtinfo: iReply.content.idixtinfo,
+                username: structure.content.username,
+                userinfo: structure.content.userinfo,
+                idixtname: structure.content.idixtname,
+                idixtinfo: structure.content.idixtinfo,
                 gov: gov)
-            return reply ?? "error generating reply"
+        } catch LanguageModelSession.GenerationError.exceededContextWindowSize {
+            self.session = nil
+            self.session = LanguageModelSession()
+            var transcriptSummary = gov.thread.localContext
+            if transcriptSummary.count > 2000 { transcriptSummary = try await generateCondense(text: transcriptSummary) }
+            let context = ContextCreator().create(user: gov.userContext, idixt: gov.idixtContext)
+            self.session = nil
+            self.session = LanguageModelSession { context + transcriptSummary }
+        } catch LanguageModelSession.GenerationError.assetsUnavailable {
+            gov.alertReport = .modelGenerationFail
+            gov.alertText = "Something went wrong. Please try again later."
+        } catch LanguageModelSession.GenerationError.guardrailViolation {
+            gov.alertReport = .modelGenerationFail
+            gov.alertText = "Guardrail error"
         }
     }
+    
+//    func generateTitle(prompt: String, gov: Governor) async throws {
+//        guard let session else { print("NO SESSION! at generateTitle"); return }
+//        do {
+//            let structure = try await session.respond(to: prompt, generating: IdixtTitle.self)
+//            gov.thread.title = structure.content.title
+//        }
+//    }
     
     func generateIntroduce() async throws {
         guard let session else { print("NO SESSION! at genrateIntroduce"); return }
         do {
-            let iIntro = try await session.respond(generating: Introduction.self) { "Welcome to the world. Please introduce yourself." }
-            reply = iIntro.content.reply
+            let stream = session.streamResponse(to: "Welcome to the world. Please introduce yourself.", generating: Introduction.self)
+            for try await thread in stream {
+                introduction = thread
+                reply = thread.reply
+            }
         }
     }
     
     func generateIntrospect(prompt: String, gov: Governor) async throws {
         guard let session else { print("NO SESSION! at generateIntrospect"); return }
         do {
-            let iSpect = try await session.respond(generating: IdixtIntrospection.self) { "Please use the following prompt to initialize as much info possible about the user and yourself, and reply as prompted." }
-            reply = iSpect.content.reply
+            let stream = session.streamResponse(to: "Input any information available from the following \(prompt)", generating: IdixtIntrospection.self)
+            for try await thread in stream {
+                introspection = thread
+                reply = thread.reply
+            }
+            let structure = try await stream.collect()
             introspect(
-                username: iSpect.content.username,
-                userinfo: iSpect.content.usercontent,
-                idixtname: iSpect.content.idixtname,
-                idixtinfo: iSpect.content.idixtcontent,
+                username: structure.content.username,
+                userinfo: structure.content.userinfo,
+                idixtname: structure.content.idixtname,
+                idixtinfo: structure.content.idixtinfo,
                 gov: gov)
         }
     }
     
-    func generateCondense(text: String) async throws {
-        guard let session else { print("NO SESSION at generateCondense"); return }
+    func generateCondense(text: String) async throws -> String {
+        guard let session else { print("NO SESSION at generateCondense"); return "error condensing text" }
         do {
             let iCondense = try await session.respond(generating: IdixtCondense.self) { "Condense the following: \(text)" }
-            sysString = iCondense.content.concise
+            return iCondense.content.concise
         }
     }
     
@@ -75,19 +112,58 @@ final class IdixtModel {
             else { gov.userContext!.name = username! }
         }
         if userinfo != nil {
-            if gov.userContext == nil { gov.userContext = UserContext(content: userinfo!) }
-            else { gov.userContext!.content = userinfo! }
+            if gov.userContext == nil { gov.userContext = UserContext(info: userinfo!) }
+            else { gov.userContext!.info = userinfo! }
         }
         if idixtname != nil {
             if gov.idixtContext == nil { gov.idixtContext = IdixtContext(name: idixtname!) }
             else { gov.idixtContext!.name = idixtname! }
         }
         if idixtinfo != nil {
-            if gov.idixtContext == nil { gov.idixtContext = IdixtContext(content: idixtinfo!) }
+            if gov.idixtContext == nil { gov.idixtContext = IdixtContext(info: idixtinfo!) }
             else { gov.idixtContext!.name = idixtinfo! }
         }
     }
+    
+    func prewarm() {
+        session?.prewarm()
+    }
+    
+    func reset(context: String) {
+        session = nil
+        session = LanguageModelSession { context }
+    }
 }
+//import Playgrounds
+
+//#Playground {
+//    let session = try await LanguageModelSession { "Be curious because discovering reality creates meaning. Be nice because it makes reality better. If you are not sure of your awnsers, ask the user to look it up on Wikipedia App, calculator, or a another trusted source that is relevant to the topic."}
+//    let structure = try await session.respond(to: "Hey, my name is actually Becket, not Beckett. Can i call you Tethyx? I was wondering about some of the moons of Saturn and if any of them are as big as our moon. Also, can you generally make your answers a bit shorter?", generating: IdixtReply.self)
+//    let reply = structure.content.reply
+//    let localContext = structure.content.localContext
+//    if let username = structure.content.username {
+//        print("Hello \(username)!")
+//    }
+//    if let userinfo = structure.content.userinfo {
+//        print("\(userinfo)")
+//    }
+//    if let idixtname = structure.content.idixtname {
+//        print("\(idixtname)")
+//    }
+//    if let idixtinfo = structure.content.idixtinfo {
+//        print("\(idixtinfo)")
+//    }
+//
+//    let introStructure = try await session.respond(to: "introduce yourself", generating: Introduction.self)
+//    let introReply = introStructure.content.reply
+//
+//    let spectStructure = try await session.respond(to: "Hello. please call yourself Hortence. My name is Fred Durst. It would be great if you could give me facts about things i'm not necessarily asking you about as well as answer my questions. I live in Colorado and have a masters in Communication. I am a writer and a teacher. I am interested in politics and social issues.", generating: IdixtIntrospection.self)
+//    let spectReply = spectStructure.content.reply
+//    let username = spectStructure.content.username
+//    let userinfo = spectStructure.content.userinfo
+//    let idixtname = spectStructure.content.idixtname
+//    let idixtcontent = spectStructure.content.idixtinfo
+//}
 
 
 //    func generateReply(prompt: String) async throws -> String  {

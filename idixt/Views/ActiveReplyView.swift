@@ -19,13 +19,16 @@ struct ActiveReplyView: View {
             
             ZStack(alignment: .top) {
                 VStack(alignment: .center) {
-                    Text(gov.activeReply)
-                        .font(.system(size: 17, weight: .regular, design: .monospaced))
-                        .multilineTextAlignment(.trailing)
-                        .frame(maxWidth: 300, alignment: .center)
-                        .monospaced()
-                        .lineLimit(nil)
-                        .offset(x: -35)
+                    if gov.activeReply != nil {
+                        Text(gov.activeReply!)
+                            .font(.system(size: 17, weight: .regular, design: .monospaced))
+                            .multilineTextAlignment(.trailing)
+                            .frame(maxWidth: 300, alignment: .center)
+                            .monospaced()
+                            .lineLimit(nil)
+                            .offset(x: -35)
+                    }
+
                 }
                 CursorView(gov: $gov)
                     .offset(x: xOffset, y: yOffset)
@@ -43,8 +46,8 @@ struct ActiveReplyView: View {
     private func cursorOffset() {
         let characterWidth: CGFloat = 6.0
         let lineHeight: CGFloat = 20.5
-        let currentLine = (gov.activeReply.count * Int(characterWidth)) / 150
-        xOffset = currentLine == 0 ? CGFloat(gov.activeReply.count * Int(characterWidth)) + (characterWidth * 2) : 152
+        let currentLine = (((gov.activeReply?.count ?? 0) * Int(characterWidth)) / 150)
+        xOffset = currentLine == 0 ? CGFloat((gov.activeReply?.count ?? 0) * Int(characterWidth)) + (characterWidth * 2) : 152
         yOffset = (CGFloat(currentLine) * lineHeight) - 33
     }
 }

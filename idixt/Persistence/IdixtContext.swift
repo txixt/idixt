@@ -11,12 +11,14 @@ import SwiftData
 @Model final class IdixtContext {
     var id: String
     var name: String
-    var content: String
+    var info: String
+    var temp: Float
     
-    init(name: String = "idixt", content: String = "") {
+    init(name: String = "idixt", info: String = "", temp: Float = 1.1) {
         id = UUID().uuidString
         self.name = name
-        self.content = content
+        self.info = info
+        self.temp = temp
     }
 }
 

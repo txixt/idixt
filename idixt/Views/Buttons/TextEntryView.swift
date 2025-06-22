@@ -20,6 +20,7 @@ struct TextEntryView: View {
                 .onChange(of: isFocused) { focused, _ in
                     if focused {
                         gov.genState = .isTyping
+                        idiot?.prewarm()
                     } else {
                         gov.genState = gov.input.isEmpty ? .idle : .hasText
                     }
@@ -30,6 +31,7 @@ struct TextEntryView: View {
                         await gov.makeAsk(idiot: idiot)
                     }
                 }
+                .submitLabel(.send)
         }
     }
 }
@@ -37,4 +39,3 @@ struct TextEntryView: View {
 #Preview {
     TextEntryView(gov: .constant(Governor()), idiot: .constant(IdixtModel()))
 }
-

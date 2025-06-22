@@ -59,7 +59,7 @@ struct ContentView: View {
             idiot = IdixtModel(context: context)
             if threads.isEmpty {
                 do {
-                    try await IdixtManager.introduce(idiot: idiot, gov: gov)
+                    try await IntroManager().introduce(idiot: idiot, gov: gov)
                 }
                 dataContext.insert(gov.thread)
             }

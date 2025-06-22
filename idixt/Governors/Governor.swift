@@ -9,7 +9,7 @@ import Foundation
 
 @Observable final class Governor {
     var input: String = ""
-    var activeReply: String = ""
+    var activeReply: String? = nil
     var thread: Thread = Thread()
     var userContext: UserContext? = nil
     var idixtContext: IdixtContext? = nil
@@ -24,16 +24,18 @@ import Foundation
     enum AlertReport { case hardwareInsufficient, modelCreationFail, modelGenerationFail }
     var alertReport: AlertReport? = nil
     var alertText: String? = nil
+    var introMode: Bool = false
     
     func makeAsk(idiot: IdixtModel) async {
         do {
+            if introMode { try await IntroManager().followUpIntro(idiot: idiot, gov: self) }
             genState = .isGenerating
             thread.exchange.append(input)
             let prompt = input
             input = ""
-            activeReply = try await idiot.generateReply(prompt: prompt, gov: self)
-            thread.exchange.append(activeReply)
-            if thread.exchange.count == 2 { await makeTitle(idiot: idiot) }
+            try await idiot.generateReply(prompt: prompt, gov: self)
+            thread.exchange.append(activeReply ?? "thread has not finished generating")
+            if thread.exchange.count == 2 { await makeTitle(idiot: idiot, prompt: prompt) }
             activeReply = ""
             genState = .idle
         } catch {
@@ -43,21 +45,26 @@ import Foundation
         }
     }
     
-    private func makeTitle(idiot: IdixtModel) async {
+    private func makeTitle(idiot: IdixtModel, prompt: String) async {
         do {
-            thread.title = try await idiot.generateReply(prompt: "generate a two or three word summary for the current thread that started with the prompt: \(input)", gov: self)
+            try await idiot.generateTitle(prompt: prompt, gov: self)
         } catch {
             thread.title = "thread for" + Date.now.description
         }
     }
     
-//    private func makeContext(idiot: IdixtModel) async {
-//        do {
-//            thread.localContext = try await idiot.generateReply(prompt: "write a one or two paragraph summary of the conversation so far for yourself to refer to going forward")
-//            print(thread.localContext)
-//        } catch {
-//            thread.localContext = "i can't remember what happened earlier in the conversation."
-//            print(thread.localContext)
-//        }
-//    }
+    private func compressContext(idiot: IdixtModel) async {
+        Task {
+            do {
+                if thread.localContext.count > 500 { thread.localContext = try await compress(thread.localContext) }
+                if userContext != nil && userContext!.info.count > 500 { userContext!.info = try await compress(userContext!.name) }
+                if idixtContext != nil && idixtContext!.info.count > 500 { idixtContext!.info = try await compress(idixtContext!.name) }
+                func compress(_ string: String) async throws -> String {
+                    return try await idiot.generateCondense(text: string)
+                }
+            }
+        }
+    }
 }
+
+

@@ -14,11 +14,11 @@ struct ContextCreator {
         var prependString = ""
         if let user {
             prependString = "The user's name is \(user.name). Please refer to them as such where possible."
-            prependString.append("Here is what you know about \(user.name): \(user.content)")
+            prependString.append("Here is what you know about \(user.name): \(user.info)")
         }
         if let idixt {
             prependString.append("Your name is \(idixt.name). Please refer to youself as such.")
-            prependString.append("This is what the user and you would like you to know about yourself: \(idixt.content)")
+            prependString.append("This is what the user and you would like you to know about yourself: \(idixt.info)")
         }
 
         return prependString + defaultContext
