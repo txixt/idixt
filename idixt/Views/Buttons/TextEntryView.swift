@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct TextEntryView: View {
+    @Environment(\.modelContext) private var dataContext
     @Binding var gov: Governor
     @Binding var idiot: IdixtModel?
     @FocusState private var isFocused: Bool
@@ -29,6 +31,10 @@ struct TextEntryView: View {
                     Task {
                         guard let idiot else { return }
                         await gov.makeAsk(idiot: idiot)
+                        dataContext.insert(gov.thread)
+                        dataContext.insert(gov.userContext)
+                        dataContext.insert(gov.idixtContext)
+                        try dataContext.save()
                     }
                 }
                 .submitLabel(.send)

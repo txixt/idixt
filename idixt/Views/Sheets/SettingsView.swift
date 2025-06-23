@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @Binding var gov: Governor
+    enum EditField { case none, username, userinfo, idixtname, idixtinfo }
+    @State var editField: EditField = .none
     
     var body: some View {
         ZStack {
@@ -17,19 +20,23 @@ struct SettingsView: View {
             ScrollView {
                 VStack {
                     Text("Idixt Settings").font(.headline)
+                        .padding(.bottom)
                     
-                    if let userContext = gov.userContext {
-                        Toggle("Lock App with FaceID", isOn: Binding(
-                            get: { userContext.faceidLock },
-                            set: { userContext.faceidLock = $0 }
-                        ))
-                    }
+                    Toggle("Lock App with FaceID", isOn: Binding(
+                        get: { gov.userContext.faceidLock },
+                        set: { gov.userContext.faceidLock = $0 }
+                    ))
+                    .buttonStyle(.glass)
                     
                     HStack {
                         Image(systemName: "person")
-                        Text("Username: ")
+                        if editField != .username { Text("Username: \(gov.userContext.name)") }
+                        if editField == .username { TextField("Username: ", text: $gov.userContext.name) }
                         Spacer()
-                        Button(action: {}) {
+                        Button(action: {
+                            if editField != .username { editField = .username }
+                            if editField == .username { editField = .none }
+                        }) {
                             Image(systemName: "square.and.pencil")
                         }
                         .buttonStyle(.glass)
@@ -37,9 +44,13 @@ struct SettingsView: View {
                     .padding(.vertical)
                     HStack {
                         Image(systemName: "person.bubble")
-                        Text("User Information: ")
+                        if editField != .userinfo { Text("User Info: \(gov.userContext.info)") }
+                        if editField == .userinfo { TextField("User Info: ", text: $gov.userContext.info) }
                         Spacer()
-                        Button(action: {}) {
+                        Button(action: {
+                            if editField != .userinfo { editField = .userinfo }
+                            if editField == .userinfo { editField = .none}
+                        }) {
                             Image(systemName: "square.and.pencil")
                         }
                         .buttonStyle(.glass)
@@ -51,9 +62,13 @@ struct SettingsView: View {
                     
                     HStack {
                         Text("▮.▮").background(.black).foregroundColor(.white).monospaced(false).font(.caption)
-                        Text("Modelname: ")
+                        if editField != .idixtname { Text("Model Name: \(gov.idixtContext.name)") }
+                        if editField == .idixtname { TextField("Model Name: ", text: $gov.idixtContext.name) }
                         Spacer()
-                        Button(action: {}) {
+                        Button(action: {
+                            if editField != .idixtname { editField = .idixtname }
+                            if editField == .idixtname { editField = .idixtname }
+                        }) {
                             Image(systemName: "square.and.pencil")
                         }
                         .buttonStyle(.glass)
@@ -61,12 +76,27 @@ struct SettingsView: View {
                     .padding(.bottom)
                     HStack {
                         Image(systemName: "ellipsis.bubble").scaleEffect(x: -1.0)
-                        Text("Model Information: ")
+                        if editField != .idixtinfo { Text("Model Info: \(gov.idixtContext.info)") }
+                        if editField == .idixtinfo { TextField("Model Info: ", text: $gov.idixtContext.info) }
                         Spacer()
-                        Button(action: {}) {
+                        Button(action: {
+                            if editField != .idixtinfo { editField = .idixtinfo }
+                            if editField == .idixtinfo { editField = .none }
+                        }) {
                             Image(systemName: "square.and.pencil")
                         }
                         .buttonStyle(.glass)
+                    }
+                    .padding(.bottom)
+                    HStack {
+                        Slider(
+                            value: $gov.idixtContext.temp,
+                            in: 0.5...2.0,
+                            minimumValueLabel: Text("predictable"),
+                            maximumValueLabel: Text("creative"),
+                            label: { Image(systemName: "thermometer.medium") }
+                        )
+                        .tint(.red)
                     }
                     .padding(.bottom)
                     

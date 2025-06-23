@@ -27,7 +27,7 @@ struct ContentView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .title) { TitleView(gov: $gov).glassEffect() }
-                    ToolbarItem(placement: .bottomBar) { MenuButtonView(gov: $gov) }
+                    ToolbarItem(placement: .bottomBar) { MenuButtonView(gov: $gov, idiot: $idiot) }
                     ToolbarSpacer()
                     ToolbarItem(placement: .bottomBar) { TextEntryView(gov: $gov, idiot: $idiot) }
                     ToolbarSpacer()
@@ -53,16 +53,16 @@ struct ContentView: View {
     
     private func loadModels() {
         Task {
-            if !userContext.isEmpty { gov.userContext = userContext.first }
-            if !idixtContext.isEmpty { gov.idixtContext = idixtContext.first }
+            if !userContext.isEmpty { gov.userContext = userContext.first! }
+            if !idixtContext.isEmpty { gov.idixtContext = idixtContext.first! }
             let context = ContextCreator().create(user: gov.userContext, idixt: gov.idixtContext)
             idiot = IdixtModel(context: context)
-            if threads.isEmpty {
-                do {
-                    try await IntroManager().introduce(idiot: idiot, gov: gov)
-                }
-                dataContext.insert(gov.thread)
-            }
+//            if threads.isEmpty {
+//                do {
+//                    try await IntroManager().introduce(idiot: idiot, gov: gov)
+//                }
+//                dataContext.insert(gov.thread)
+//            }
         }
     }
 }

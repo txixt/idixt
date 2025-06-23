@@ -30,7 +30,7 @@ final class IdixtModel {
             return
         }
         do {
-            let stream = session.streamResponse(to: prompt, generating: IdixtReply.self, options: GenerationOptions(temperature: Double(gov.idixtContext?.temp ?? 1.1)))
+            let stream = session.streamResponse(to: prompt, generating: IdixtReply.self, options: GenerationOptions(temperature: Double(gov.idixtContext.temp)))
             for try await thread in stream {
                 idixtReply = thread
                 gov.activeReply = thread.reply
@@ -38,6 +38,7 @@ final class IdixtModel {
             let structure = try await stream.collect()
             gov.thread.localContext.append(structure.content.localContext)
             gov.thread.title = structure.content.title
+            print(structure.content)
             introspect(
                 username: structure.content.username,
                 userinfo: structure.content.userinfo,
@@ -61,43 +62,6 @@ final class IdixtModel {
         }
     }
     
-//    func generateTitle(prompt: String, gov: Governor) async throws {
-//        guard let session else { print("NO SESSION! at generateTitle"); return }
-//        do {
-//            let structure = try await session.respond(to: prompt, generating: IdixtTitle.self)
-//            gov.thread.title = structure.content.title
-//        }
-//    }
-    
-    func generateIntroduce() async throws {
-        guard let session else { print("NO SESSION! at genrateIntroduce"); return }
-        do {
-            let stream = session.streamResponse(to: "Welcome to the world. Please introduce yourself.", generating: Introduction.self)
-            for try await thread in stream {
-                introduction = thread
-                reply = thread.reply
-            }
-        }
-    }
-    
-    func generateIntrospect(prompt: String, gov: Governor) async throws {
-        guard let session else { print("NO SESSION! at generateIntrospect"); return }
-        do {
-            let stream = session.streamResponse(to: "Input any information available from the following \(prompt)", generating: IdixtIntrospection.self)
-            for try await thread in stream {
-                introspection = thread
-                reply = thread.reply
-            }
-            let structure = try await stream.collect()
-            introspect(
-                username: structure.content.username,
-                userinfo: structure.content.userinfo,
-                idixtname: structure.content.idixtname,
-                idixtinfo: structure.content.idixtinfo,
-                gov: gov)
-        }
-    }
-    
     func generateCondense(text: String) async throws -> String {
         guard let session else { print("NO SESSION at generateCondense"); return "error condensing text" }
         do {
@@ -107,22 +71,10 @@ final class IdixtModel {
     }
     
     private func introspect(username: String?, userinfo: String?, idixtname: String?, idixtinfo: String?, gov: Governor) {
-        if username != nil {
-            if gov.userContext == nil { gov.userContext = UserContext(name: username!) }
-            else { gov.userContext!.name = username! }
-        }
-        if userinfo != nil {
-            if gov.userContext == nil { gov.userContext = UserContext(info: userinfo!) }
-            else { gov.userContext!.info = userinfo! }
-        }
-        if idixtname != nil {
-            if gov.idixtContext == nil { gov.idixtContext = IdixtContext(name: idixtname!) }
-            else { gov.idixtContext!.name = idixtname! }
-        }
-        if idixtinfo != nil {
-            if gov.idixtContext == nil { gov.idixtContext = IdixtContext(info: idixtinfo!) }
-            else { gov.idixtContext!.name = idixtinfo! }
-        }
+        if username != nil { gov.userContext.name = username! }
+        if userinfo != nil { gov.userContext.info = userinfo! }
+        if idixtname != nil { gov.idixtContext.name = idixtname! }
+        if idixtinfo != nil { gov.idixtContext.name = idixtinfo! }
     }
     
     func prewarm() {
@@ -134,6 +86,45 @@ final class IdixtModel {
         session = LanguageModelSession { context }
     }
 }
+    
+//    func generateTitle(prompt: String, gov: Governor) async throws {
+//        guard let session else { print("NO SESSION! at generateTitle"); return }
+//        do {
+//            let structure = try await session.respond(to: prompt, generating: IdixtTitle.self)
+//            gov.thread.title = structure.content.title
+//        }
+//    }
+    
+//    func generateIntroduce() async throws {
+//        guard let session else { print("NO SESSION! at genrateIntroduce"); return }
+//        do {
+//            let stream = session.streamResponse(to: "Welcome to the world. Please introduce yourself.", generating: Introduction.self)
+//            for try await thread in stream {
+//                introduction = thread
+//                reply = thread.reply
+//            }
+//        }
+//    }
+//    
+//    func generateIntrospect(prompt: String, gov: Governor) async throws {
+//        guard let session else { print("NO SESSION! at generateIntrospect"); return }
+//        do {
+//            let stream = session.streamResponse(to: "Input any information available from the following \(prompt)", generating: IdixtIntrospection.self)
+//            for try await thread in stream {
+//                introspection = thread
+//                reply = thread.reply
+//            }
+//            let structure = try await stream.collect()
+//            introspect(
+//                username: structure.content.username,
+//                userinfo: structure.content.userinfo,
+//                idixtname: structure.content.idixtname,
+//                idixtinfo: structure.content.idixtinfo,
+//                gov: gov)
+//        }
+//    }
+    
+
 //import Playgrounds
 
 //#Playground {

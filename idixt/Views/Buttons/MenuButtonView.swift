@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MenuButtonView: View {
+    @Environment(\.modelContext) private var dataContext
+    @Query private var threads: [Thread]
     @Binding var gov: Governor
+    @Binding var idiot: IdixtModel?
+    @State private var showMenu: Bool = false
     
     var body: some View {
         Menu {
@@ -53,12 +58,16 @@ struct MenuButtonView: View {
     }
     
     private func newThread() {
-        print("save thread")
-        print("new session")
+        guard let idiot else { return }
+        if !gov.thread.exchange.isEmpty { dataContext.insert(gov.thread) }
+        gov.thread = Thread()
+        let context = ContextCreator().create(user: gov.userContext, idixt: gov.idixtContext)
+        idiot.reset(context: context)
         gov.mode = nil
+        showMenu = false
     }
 }
 
 #Preview {
-    MenuButtonView(gov: .constant(Governor()))
+    MenuButtonView(gov: .constant(Governor()), idiot: .constant(IdixtModel()))
 }

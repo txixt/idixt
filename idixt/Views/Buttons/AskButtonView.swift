@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AskButtonView: View {
+    @Environment(\.modelContext) private var dataContext
     @Binding var gov: Governor
     @Binding var idiot: IdixtModel?
     
@@ -28,7 +30,13 @@ struct AskButtonView: View {
     
     private func makeTheAsk() async {
         guard let idiot else { return }
-        do { try await idiot.generateReply(prompt: gov.input, gov: gov) }
+        do {
+            try await idiot.generateReply(prompt: gov.input, gov: gov)
+            dataContext.insert(gov.thread)
+            dataContext.insert(gov.userContext)
+            dataContext.insert(gov.idixtContext)
+            try dataContext.save()
+        }
         catch { gov.alertReport = .modelGenerationFail; gov.alertText = "model could not generate reply: \(error)" }
     }
 }

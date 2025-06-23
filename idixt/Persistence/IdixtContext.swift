@@ -14,7 +14,7 @@ import SwiftData
     var info: String
     var temp: Float
     
-    init(name: String = "idixt", info: String = "", temp: Float = 1.1) {
+    init(name: String = "idixt", info: String = "", temp: Float = 0.8) {
         id = UUID().uuidString
         self.name = name
         self.info = info
