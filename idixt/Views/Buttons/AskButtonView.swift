@@ -12,18 +12,28 @@ struct AskButtonView: View {
     @Environment(\.modelContext) private var dataContext
     @Binding var gov: Governor
     @Binding var idiot: IdixtModel?
+    @State var voiceToText: VoiceToText?
     
     var body: some View {
-        Button(action: {
-            switch gov.genState {
-            case .idle, .isRecording:
-                Task { await toggleRecording() }
-            default:
-                Task { await makeTheAsk() }
+        
+        if gov.canRecord == nil || gov.canRecord == true {
+            Button(action: {
+                switch gov.genState {
+                case .idle:
+                    Task { try await recordTheAsk() }
+                case .isRecording: Task { try await writeThatAsk() }
+                default:
+                    Task { await makeTheAsk() }
+                }
+            }) {
+                Image(systemName: gov.genState == .idle ? "mic" : gov.genState == .isRecording ? "stop" : "arrow.up")
             }
-        }) {
-            Image(systemName: gov.genState == .idle ? "mic" : gov.genState == .isRecording ? "stop" : "arrow.up")
+        } else {
+            Button(action: { Task { await makeTheAsk() } }) {
+                Image(systemName: "arrow.up")
+            }
         }
+
     }
     
     private func toggleRecording() async {}
@@ -38,6 +48,23 @@ struct AskButtonView: View {
             try dataContext.save()
         }
         catch { gov.alertReport = .modelGenerationFail; gov.alertText = "model could not generate reply: \(error)" }
+    }
+    
+    private func recordTheAsk() async throws {
+        let voiceToText = VoiceToText()
+        let error = voiceToText.start()
+        if error != nil {
+            gov.canRecord = voiceToText.isPermitted
+            gov.alertText = error
+            gov.alertReport = .recordingFail
+        }
+    }
+    
+    private func writeThatAsk() async throws {
+        guard let voiceToText else { gov.genState = .idle; return }
+        voiceToText.stop()
+        gov.input = voiceToText.transcript
+        await makeTheAsk()
     }
 }
 

@@ -39,7 +39,7 @@ final class IdixtModel {
             gov.thread.localContext.append(structure.content.localContext)
             gov.thread.title = structure.content.title
             print(structure.content)
-            introspect(
+            try await introspect(
                 username: structure.content.username,
                 userinfo: structure.content.userinfo,
                 idixtname: structure.content.idixtname,
@@ -62,6 +62,24 @@ final class IdixtModel {
         }
     }
     
+    func generateIntrospect(prompt: String, gov: Governor) async throws {
+        guard let session else { print("NO SESSION! at generateIntrospect"); return }
+        do {
+            let stream = session.streamResponse(to: "Input any information available from the following \(prompt)", generating: IdixtIntrospection.self)
+            for try await thread in stream {
+                introspection = thread
+                reply = thread.reply
+            }
+            let structure = try await stream.collect()
+            try await introspect(
+                username: structure.content.username,
+                userinfo: structure.content.userinfo,
+                idixtname: structure.content.idixtname,
+                idixtinfo: structure.content.idixtinfo,
+                gov: gov)
+        }
+    }
+    
     func generateCondense(text: String) async throws -> String {
         guard let session else { print("NO SESSION at generateCondense"); return "error condensing text" }
         do {
@@ -70,11 +88,17 @@ final class IdixtModel {
         }
     }
     
-    private func introspect(username: String?, userinfo: String?, idixtname: String?, idixtinfo: String?, gov: Governor) {
+    private func introspect(username: String?, userinfo: String?, idixtname: String?, idixtinfo: String?, gov: Governor) async throws {
         if username != nil { gov.userContext.name = username! }
-        if userinfo != nil { gov.userContext.info = userinfo! }
+        if userinfo != nil {
+            gov.userContext.info.append(contentsOf: userinfo!)
+            if gov.userContext.info.count > 2000 { gov.userContext.info = try await generateCondense(text: gov.userContext.info) }
+        }
         if idixtname != nil { gov.idixtContext.name = idixtname! }
-        if idixtinfo != nil { gov.idixtContext.name = idixtinfo! }
+        if idixtinfo != nil {
+            gov.idixtContext.info.append(contentsOf: idixtinfo!)
+            if gov.idixtContext.info.count > 2000 { gov.idixtContext.info = try await generateCondense(text: gov.idixtContext.info) }
+        }
     }
     
     func prewarm() {

@@ -15,9 +15,11 @@ struct ArchiveView: View {
     
     var body: some View {
         VStack {
-            Text("Idixt Archive").font(.headline)
+            Text("Idixt Archive").font(.title)
+                .padding(.vertical)
+            Divider()
                 .padding(.bottom)
-            ScrollView {
+            List {
                 ForEach(threads) { thread in
                     HStack {
                         Button(action: { setChosenThread(thread) }) {
@@ -26,10 +28,10 @@ struct ArchiveView: View {
                         .bold()
                         Spacer()
                     }
-                    .padding()
                 }
                 .onDelete(perform: deleteChosenThreads)
             }
+            .listStyle(.plain)
             Spacer()
             Button(action: { gov.mode = nil }) {
                 Image(systemName: "xmark")

@@ -37,7 +37,7 @@ struct ContentView: View {
                 .sheet(item: $gov.mode) { mode in
                       switch mode {
                       case .archiveSheet: ArchiveView(gov: $gov)
-                      case .settingsSheet: SettingsView(gov: $gov)
+                      case .settingsSheet: SettingsView(gov: $gov, idiot: $idiot)
                       case .aboutSheet: AboutView(gov: $gov)
                       }
                   }
@@ -57,12 +57,10 @@ struct ContentView: View {
             if !idixtContext.isEmpty { gov.idixtContext = idixtContext.first! }
             let context = ContextCreator().create(user: gov.userContext, idixt: gov.idixtContext)
             idiot = IdixtModel(context: context)
-//            if threads.isEmpty {
-//                do {
-//                    try await IntroManager().introduce(idiot: idiot, gov: gov)
-//                }
-//                dataContext.insert(gov.thread)
-//            }
+            if threads.isEmpty {
+                Initialixt().startUp(gov: gov)
+                dataContext.insert(gov.thread)
+            }
         }
     }
 }

@@ -16,19 +16,20 @@ import Foundation
     
     enum GenerationState { case idle, isRecording, isTyping, hasText, thinking, isGenerating }
     var genState: GenerationState = .idle
+    var canRecord: Bool? = nil
     enum ApplicationMode: Identifiable {
         case archiveSheet, settingsSheet, aboutSheet
         var id: Self { self }
     }
     var mode: ApplicationMode? = nil
-    enum AlertReport { case hardwareInsufficient, modelCreationFail, modelGenerationFail }
+    enum AlertReport { case hardwareInsufficient, modelCreationFail, modelGenerationFail, recordingFail }
     var alertReport: AlertReport? = nil
     var alertText: String? = nil
     var introMode: Bool = false
     
     func makeAsk(idiot: IdixtModel) async {
         do {
-//            if introMode { try await IntroManager().followUpIntro(idiot: idiot, gov: self) }
+            if introMode { try await Initialixt().setModel(gov: self, idiot: idiot) }
             genState = .thinking
             thread.exchange.append(input)
             let prompt = input
@@ -45,14 +46,6 @@ import Foundation
             alertReport = .modelGenerationFail
         }
     }
-    
-//    private func makeTitle(idiot: IdixtModel, prompt: String) async {
-//        do {
-//            try await idiot.generateTitle(prompt: prompt, gov: self)
-//        } catch {
-//            thread.title = "thread for" + Date.now.description
-//        }
-//    }
     
     private func compressContext(idiot: IdixtModel) async {
         Task {

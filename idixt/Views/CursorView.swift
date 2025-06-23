@@ -51,7 +51,7 @@ struct CursorView: View {
                 .padding(.vertical, 10)
                 .glassEffect(.regular.tint(.clear), in: .rect(cornerRadius: 3))
                 .foregroundColor(curse.cursorBlink ? .black : .clear)
-                .rotationEffect(gov.genState == .isGenerating ? .degrees(11) : .degrees(0))
+                .rotationEffect(gov.genState == .thinking ? .degrees(11) : .degrees(0))
 
         }
         .offset(x: -19.5, y: -19)

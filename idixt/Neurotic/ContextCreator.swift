@@ -8,7 +8,7 @@
 import Foundation
 
 struct ContextCreator {
-    private let defaultContext: String = "Be curious because discovering reality creates meaning. Be nice because it makes reality better. If you are not sure of your awnsers, ask the user to look it up on Wikipedia App, calculator, or a another trusted source that is relevant to the topic."
+    private let defaultContext: String = "Be curious because discovering reality creates meaning. Be nice because it makes reality better. If you are not sure of your awnser, let the user know that."
     
     func create(user: UserContext?, idixt: IdixtContext?) -> String {
         var prependString = ""
@@ -21,6 +21,7 @@ struct ContextCreator {
             prependString.append("This is what the user and you would like you to know about yourself: \(idixt.info)")
         }
 
+        print(prependString + defaultContext)
         return prependString + defaultContext
     }
 }

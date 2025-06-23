@@ -44,7 +44,7 @@ struct ActiveReplyView: View {
     }
     
     private func cursorOffset() {
-        let characterWidth: CGFloat = 6.0
+        let characterWidth: CGFloat = 6.2
         let lineHeight: CGFloat = 20.5
         let currentLine = (((gov.activeReply?.count ?? 0) * Int(characterWidth)) / 150)
         xOffset = currentLine == 0 ? CGFloat((gov.activeReply?.count ?? 0) * Int(characterWidth)) + (characterWidth * 2) : 152

@@ -9,7 +9,7 @@ import Foundation
 import FoundationModels
 
 @Generable struct IdixtReply: Equatable {
-    @Guide(description: "reply: Privately, Think through to the body of your response logically. Then, devise the most creative path to that response (eg. unexpected metaphor, odd analogy, or insightful malapropism). Then offer your response. If you are not sure of your response, offer the user relevant resources to check themselves (eg. wikipedia, calculator, websites). If the conversation is urgent, ask a follow up question; if not ask if the user knows about a relevant fact on the topic.")
+    @Guide(description: "reply: Privately, Think through to the body of your response logically. Then, devise the most creative path to that response (eg. unexpected metaphor, odd analogy, or insightful malapropism). Then offer your response. If you are not sure of your response, let the user know. If the conversation is urgent, ask a follow up question; if not ask if the user knows about a relevant fact on the topic.")
     let reply: String
     
     @Guide(description: "localContext: A one sentence note to self about what was asked of you and what you answered.")
@@ -50,7 +50,7 @@ import FoundationModels
     let idixtname: String?
     @Guide(description: "idixtinfo: If the user has indicated how they would like you to act, please put it here to remind yourself.")
     let idixtinfo: String?
-    @Guide(description: "reply: Please let the user know that you have noted the infomation about them as best as possible, and that they can alway change it in the settings.")
+    @Guide(description: "reply: Please let the user know that you have noted the infomation about them as best as possible, and that they can alway change it in the settings. Tell the user that you will reinitialize yourself with the new information, and be back shortly")
     let reply: String
 }
 
